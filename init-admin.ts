@@ -1,7 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import * as mariadb from 'mariadb';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const pool = mariadb.createPool(process.env.DATABASE_URL!.replace('mysql://', 'mariadb://'));
+const prisma = new PrismaClient({ adapter: new PrismaMariaDb(pool as any) });
 
 async function main() {
   const email = 'avery@umberandash.com';
