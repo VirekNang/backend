@@ -1,0 +1,382 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  //url      = env("DATABASE_URL")
+}
+
+model Customer {
+  CustomerID   Int    @id @default(autoincrement())
+  uuid         String @unique @default(uuid())
+  CustomerNo   String @db.VarChar(50)
+  CustomerName String @db.VarChar(50)
+  Gender       String @db.VarChar(10)
+
+  Address      String      @db.VarChar(50)
+  Phone        String      @db.VarChar(50)
+  MembershipID Int?
+  membership   Membership? @relation(fields: [MembershipID], references: [MembershipID])
+  rewardPoints Int         @default(0)
+
+  Note String @db.VarChar(250)
+
+  CreatedDate DateTime @default(now())
+  UpdatedDate DateTime @updatedAt
+  Sale        Sale[]
+}
+
+model Membership {
+  MembershipID   Int      @id @default(autoincrement())
+  uuid           String   @unique @default(uuid())
+  MembershipName String   @db.VarChar(100)
+  DiscountRate   Decimal  @default(0.0) @db.Decimal(5, 2)
+  MinPoints      Int      @default(0)
+  Description    String?  @db.VarChar(250)
+  CreatedDate    DateTime @default(now())
+  UpdatedDate    DateTime @updatedAt
+
+  customers Customer[]
+}
+
+model Employee {
+  EmployeeID      Int            @id @default(autoincrement())
+  uuid            String         @unique @default(uuid())
+  EmployeeNo      String         @db.VarChar(50)
+  EmployeeName    String         @db.VarChar(50)
+  Gender          String         @db.VarChar(10)
+  DateOfBirth     DateTime       @db.Date
+  Indentity       Int?
+  Phone           String         @db.VarChar(18)
+  EducationStatus String         @db.VarChar(100)
+  Address         String         @db.VarChar(250)
+  Department      String         @db.VarChar(200)
+  Position        String         @db.VarChar(200)
+  HiredDate       DateTime       @db.Date
+  BaseSalary      Decimal        @db.Decimal(18, 2)
+  PhotoURL        String         @db.VarChar(250)
+  IsActive        Boolean        @default(true)
+  IsDelete        DateTime?      @db.Date
+  CreatedDate     DateTime       @default(now())
+  UpdatedDate     DateTime       @updatedAt
+  SalaryDetail    SalaryDetail[]
+  OpeningCash     OpeningCash[]
+  Sale            Sale[]
+  Users           Users[]
+  expenses        Expense[]
+}
+
+model SalaryDetail {
+  SalaryDetailID Int      @id @default(autoincrement())
+  uuid           String   @unique @default(uuid())
+  EmployeeID     Int
+  Bonus          Decimal  @db.Decimal(18, 2)
+  Month          Int
+  Year           Int
+  SalaryOfMonth  Decimal  @db.Decimal(18, 2)
+  TotalSalary    Decimal  @db.Decimal(18, 2)
+  Note           String   @db.VarChar(250)
+  CreatedDate    DateTime @default(now())
+  UpdatedDate    DateTime @updatedAt
+  Employee       Employee @relation(fields: [EmployeeID], references: [EmployeeID])
+}
+
+model Categories {
+  CategoryID   Int    @id @default(autoincrement())
+  uuid         String @unique @default(uuid())
+  CategoryName String @db.VarChar(50)
+
+  Description String   @db.VarChar(250)
+  Thumnail    String   @db.VarChar(150)
+  IsActive    Boolean  @default(true)
+  CreatedDate DateTime @default(now())
+  UpdatedDate DateTime @updatedAt
+  item        Item[]
+}
+
+model Brand {
+  BrandID     Int     @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  BrandName   String  @db.VarChar(100)
+  Description String? @db.VarChar(500)
+  Image       String? @db.VarChar(100)
+  IsActive    Boolean @default(true)
+  CreatedDate DateTime @default(now())
+  UpdatedDate DateTime @updatedAt
+  items       Item[]
+}
+
+model Item {
+  ItemID        Int     @id @default(autoincrement())
+  BrandID       Int
+  CategoryID    Int
+  ItemName      String? @db.VarChar(100)
+  StockQuantity Int     @default(0)
+
+  
+  UnitPrice Decimal @db.Decimal(18, 2) // Cost Price
+  SalePrice Decimal @db.Decimal(18, 2) // Sale Price
+
+  Description   String? @db.VarChar(1000)
+  Image         String? @db.VarChar(100)
+  IsActive      Boolean @default(true)
+  Barcode       String? @unique @db.VarChar(100)
+  UnitOfMeasure String? @default("PCS") @db.VarChar(50)
+  CreatedDate   DateTime @default(now())
+  UpdatedDate   DateTime @updatedAt
+  brand           Brand            @relation(fields: [BrandID], references: [BrandID])
+  category        Categories       @relation(fields: [CategoryID], references: [CategoryID])
+  saleDetails     SaleDetail[]
+  purchaseDetails PurchaseDetail[]
+}
+
+model OpeningCash {
+  OpeningCashID   Int           @id @default(autoincrement())
+  uuid            String        @unique @default(uuid())
+  EmployeeID      Int?
+  OpeningCashDate DateTime      @default(now())
+  OpeningCashBy   String        @db.VarChar(100)
+  Note            String        @db.VarChar(250)
+  CreatedDate     DateTime      @default(now())
+  Employee        Employee?     @relation(fields: [EmployeeID], references: [EmployeeID])
+  CashSession     CashSession[]
+  Sale            Sale[]
+}
+
+model CashSession {
+  CashSessionID    Int         @id @default(autoincrement())
+  uuid             String      @unique @default(uuid())
+  OpeningCashID    Int
+  ClosedBy         Int?
+  ClosingCashDate  DateTime    @db.DateTime
+  TotalOrderCount  Int         @default(0)
+  TotalOrderAmount Decimal     @db.Decimal(18, 2)
+  Note             String      @db.VarChar(250)
+  CreatedDate      DateTime    @default(now())
+  UpdatedDate      DateTime    @updatedAt
+  OpeningCash      OpeningCash @relation(fields: [OpeningCashID], references: [OpeningCashID])
+}
+
+model Sale {
+  SaleID          Int          @id @default(autoincrement())
+  SaleDate        DateTime     @default(now())
+  InvoiceNo       String?      @unique @db.VarChar(200)
+  EmployeeID      Int?
+  CustomerID      Int?
+  OpeningCashID   Int?
+  //posTerminalID  String?  @db.VarChar(50)
+  PaymentMethodID Int?     
+  IsPay           Boolean      @default(false)
+  SubTotal        Decimal      @default(0.0) @db.Decimal(18, 2)
+  TaxAmount       Decimal      @default(0.0) @db.Decimal(18, 2)
+  TotalAmount     Decimal      @default(0.0) @db.Decimal(18, 2)
+  Note            String?      @db.VarChar(300)
+  opencash        OpeningCash? @relation(fields: [OpeningCashID], references: [OpeningCashID])
+  customer        Customer?    @relation(fields: [CustomerID], references: [CustomerID])
+  employee        Employee?    @relation(fields: [EmployeeID], references: [EmployeeID])
+  paymentmethod   PaymentMethod? @relation(fields: [PaymentMethodID], references: [PaymentMethodID])
+  saleDetails     SaleDetail[]
+  CreatedDate      DateTime     @default(now())
+  UpdatedDate      DateTime     @updatedAt
+}
+
+model SaleDetail {
+  saleDetailID Int     @id @default(autoincrement())
+  SaleID       Int
+  ItemID       Int
+  Quantity     Int
+  UnitPrice    Decimal @db.Decimal(18, 2)
+  DiscountAmt  Decimal @default(0.0) @db.Decimal(18, 2)
+  SubTotal     Decimal @db.Decimal(18, 2)
+  IsPromotion  Boolean @default(false)
+  Description  String? @db.VarChar(300)
+
+  sale Sale @relation(fields: [SaleID], references: [SaleID])
+  item Item @relation(fields: [ItemID], references: [ItemID])
+    CreatedDate      DateTime     @default(now())
+  UpdatedDate      DateTime     @updatedAt
+}
+
+model Purchase {
+  PurchaseID   Int      @id @default(autoincrement())
+  PurchaseDate DateTime @default(now())
+  InvoiceNo    String?  @unique @db.VarChar(200)
+  EmployeeID   Int?
+  SupplierID   Int?
+
+  //posTerminalID  String?  @db.VarChar(50)
+  PaymentMethodID String?          @db.VarChar(100)
+  IsPay           Boolean          @default(false)
+  SubTotal        Decimal          @default(0.0) @db.Decimal(18, 2)
+  TaxAmount       Decimal          @default(0.0) @db.Decimal(18, 2)
+  TotalAmount     Decimal          @default(0.0) @db.Decimal(18, 2)
+  Note            String?          @db.VarChar(300)
+    CreatedDate      DateTime     @default(now())
+  UpdatedDate      DateTime     @updatedAt
+  // opencash       OpeningCash? @relation(fields: [OpeningCashID], references: [OpeningCashID])
+  purchaseDetails PurchaseDetail[]
+  supplier        Supplier?        @relation(fields: [SupplierID], references: [SupplierID])
+}
+
+model PurchaseDetail {
+  purchaseDetailID Int     @id @default(autoincrement())
+  PurchaseID       Int
+  ItemID           Int
+  Quantity         Int
+  UnitPrice        Decimal @db.Decimal(18, 2)
+  DiscountAmt      Decimal @default(0.0) @db.Decimal(18, 2)
+  SubTotal         Decimal @db.Decimal(18, 2)
+  IsPromotion      Boolean @default(false)
+  Description      String? @db.VarChar(300)
+  CreatedDate      DateTime     @default(now())
+  UpdatedDate      DateTime     @updatedAt
+  purchase Purchase @relation(fields: [PurchaseID], references: [PurchaseID])
+  item     Item     @relation(fields: [ItemID], references: [ItemID])
+}
+
+model Expense {
+  ExpenseID    Int      @id @default(autoincrement())
+  ExpenseDate  DateTime @default(now())
+  Title        String   @db.VarChar(200)
+  Amount       Decimal  @db.Decimal(18, 2)
+  Category     String?  @db.VarChar(100)
+  Description  String?  @db.VarChar(500)
+  Image        String?  @db.VarChar(250)
+  EmployeeID   Int?
+  CreatedDate  DateTime @default(now())
+  UpdatedDate  DateTime @updatedAt
+  employee     Employee? @relation(fields: [EmployeeID], references: [EmployeeID])
+}
+
+model Supplier {
+  SupplierID   Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid())
+  SupplierName String     @db.VarChar(50)
+  Phone        String     @db.VarChar(50)
+  Address      String     @db.VarChar(250)
+  Description  String     @db.VarChar(250)
+  Thumnail     String     @db.VarChar(150)
+  IsActive     Boolean    @default(true)
+  CreatedDate  DateTime   @default(now())
+  UpdatedDate  DateTime   @updatedAt
+  purchase     Purchase[]
+}
+
+model Promotion {
+  PromotionID           Int      @id @default(autoincrement())
+  TargetID              Int
+  PromotionType         String?  @db.VarChar(100)
+  PromotionName         String?  @db.VarChar(200)
+  Description           String?  @db.VarChar(500)
+  DiscountPercents      Decimal  @db.Decimal(5, 2)
+  StartDate             DateTime
+  EndDate               DateTime
+  IsActive              Boolean  @default(true)
+  MinimumPurchaseAmount Decimal  @default(0.0) @db.Decimal(18, 2)
+  MemberOnly            Boolean  @default(false)
+  PromoCode             String?  @unique @db.VarChar(50)
+    CreatedDate      DateTime     @default(now())
+  UpdatedDate      DateTime     @updatedAt
+}
+
+model PaymentMethod {
+  PaymentMethodID   Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
+  PaymentMethodName String   @db.VarChar(50)
+  Description       String   @db.VarChar(250)
+  Image             String   @default("default.png") @db.VarChar(250)
+  IsActive          Boolean  @default(true)
+  CreatedDate       DateTime @default(now())
+  UpdatedDate       DateTime @updatedAt
+   Sale             Sale[]
+}
+
+model Users {
+  UserID      Int              @id
+  uuid        String           @unique @default(uuid())
+  Username    String           @db.VarChar(200)
+  Password    String           @db.VarChar(200)
+  Email       String           @db.VarChar(200)
+  Phone       String           @db.VarChar(200)
+  Image       String           @db.VarChar(200)
+  PinCode     String?          @db.VarChar(100)
+  IsAdmin     Boolean          @default(false)
+  IsActive    Boolean          @default(true)
+  IsDuDate    DateTime
+  IsDelete    Boolean          @default(false)
+  CreatedDate DateTime         @default(now())
+  UpdatedDate DateTime         @updatedAt
+  Employee    Employee         @relation(fields: [UserID], references: [EmployeeID])
+  Permissions UserPermission[]
+  Devices     Device[]
+  DeviceVerificationRequests DeviceVerificationRequest[]
+}
+
+model UserPermission {
+  UserPermissionID Int      @id @default(autoincrement())
+  UserID           Int
+  PermissionName   String   @db.VarChar(200)
+  CreatedDate      DateTime @default(now())
+  UpdatedDate      DateTime @updatedAt
+  User             Users    @relation(fields: [UserID], references: [UserID], onDelete: Cascade)
+}
+
+model LoginSession {
+  SessionID String    @id @db.VarChar(64)
+  UserID    Int
+  UserType  String    @db.VarChar(20)
+  ExpiresAt DateTime
+  RevokedAt DateTime?
+  CreatedAt DateTime  @default(now())
+
+  @@index([UserID, UserType])
+  @@index([ExpiresAt])
+}
+
+model LoginActivity {
+  LoginActivityID Int      @id @default(autoincrement())
+  UserID          Int?
+  UserType        String   @db.VarChar(20)
+  Email           String   @db.VarChar(200)
+  Success         Boolean
+  IPAddress       String?  @db.VarChar(64)
+  UserAgent       String?  @db.VarChar(500)
+  Location        String?  @db.VarChar(250)
+  FailureReason   String?  @db.VarChar(100)
+  CreatedAt       DateTime @default(now())
+
+  @@index([Email, CreatedAt])
+  @@index([UserID, CreatedAt])
+}
+
+// Device Verification additions
+
+model Device {
+  DeviceID         Int      @id @default(autoincrement())
+  UserID           Int
+  DeviceIdentifier String   @unique @db.VarChar(255)
+  UserAgent        String?  @db.VarChar(500)
+  IsBlocked        Boolean  @default(false)
+  IsVerified       Boolean  @default(false)
+  CreatedAt        DateTime @default(now())
+  LastLoginAt      DateTime @default(now())
+
+  User             Users    @relation(fields: [UserID], references: [UserID], onDelete: Cascade)
+  Requests         DeviceVerificationRequest[]
+}
+
+model DeviceVerificationRequest {
+  RequestID        Int      @id @default(autoincrement())
+  DeviceID         Int
+  UserID           Int
+  IPAddress        String?  @db.VarChar(64)
+  Location         String?  @db.VarChar(250)
+  Status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  RejectionCount   Int      @default(0)
+  CreatedAt        DateTime @default(now())
+  UpdatedAt        DateTime @updatedAt
+
+  Device           Device   @relation(fields: [DeviceID], references: [DeviceID], onDelete: Cascade)
+  User             Users    @relation(fields: [UserID], references: [UserID], onDelete: Cascade)
+}

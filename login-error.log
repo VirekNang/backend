@@ -1,0 +1,6 @@
+Invalid email or password
+UnauthorizedException: Invalid email or password
+    at AuthController.login (D:\vstechpos\Market_Pos\backend\src\modules\auth\auth.controller.ts:33:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async D:\vstechpos\Market_Pos\backend\node_modules\@nestjs\core\router\router-execution-context.js:55:62
+    at async Object.<anonymous> (D:\vstechpos\Market_Pos\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17)
