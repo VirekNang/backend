@@ -105,8 +105,8 @@ export class ItemsService {
                 ItemName: data.ItemName,
                 UnitPrice: parseFloat(data.UnitPrice || '0'),
                 SalePrice: parseFloat(data.SalePrice || '0'),
-                CategoryID: parseInt(data.CategoryID, 10),
-                BrandID: parseInt(data.BrandID, 10),
+                CategoryID: data.CategoryID && parseInt(data.CategoryID, 10) !== 0 ? parseInt(data.CategoryID, 10) : null,
+                BrandID: data.BrandID && parseInt(data.BrandID, 10) !== 0 ? parseInt(data.BrandID, 10) : null,
                 Description: data.Description || '',
                 Image: filename || data.Image || 'default.png',
                 IsActive: data.IsActive === 'true' || data.IsActive === true,
@@ -140,8 +140,12 @@ export class ItemsService {
         if (data.ItemName !== undefined) updateData.ItemName = data.ItemName;
         if (data.UnitPrice !== undefined && !isNaN(parseFloat(data.UnitPrice))) updateData.UnitPrice = parseFloat(data.UnitPrice);
         if (data.SalePrice !== undefined && !isNaN(parseFloat(data.SalePrice))) updateData.SalePrice = parseFloat(data.SalePrice);
-        if (data.CategoryID !== undefined && !isNaN(parseInt(data.CategoryID, 10))) updateData.CategoryID = parseInt(data.CategoryID, 10);
-        if (data.BrandID !== undefined && !isNaN(parseInt(data.BrandID, 10))) updateData.BrandID = parseInt(data.BrandID, 10);
+        if (data.CategoryID !== undefined) {
+            updateData.CategoryID = data.CategoryID && parseInt(data.CategoryID, 10) !== 0 ? parseInt(data.CategoryID, 10) : null;
+        }
+        if (data.BrandID !== undefined) {
+            updateData.BrandID = data.BrandID && parseInt(data.BrandID, 10) !== 0 ? parseInt(data.BrandID, 10) : null;
+        }
         if (data.Description !== undefined) updateData.Description = data.Description;
         if (data.IsActive !== undefined) updateData.IsActive = data.IsActive === 'true' || data.IsActive === true;
         if (data.StockQuantity !== undefined && !isNaN(parseInt(data.StockQuantity, 10))) updateData.StockQuantity = parseInt(data.StockQuantity, 10);
